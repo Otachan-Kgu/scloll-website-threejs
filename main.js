@@ -47,9 +47,89 @@ torus.position.set(0, 1, 10);
 
 scene.add(box, torus);
 
+//線形補完絵滑らかに移動
+function lerp(x, y, a) {
+  return (1 - a) * x + a *y;
+}
+
+function scalePercent(start, end) {
+  return (scrollParcent - start) / (end - start);
+}
+
+
+//スクロールアニメーション
+const animationScripts = [];
+
+//1つ目のアニメーション
+animationScripts.push({
+  start: 0,
+  end: 40,
+  function() {
+    camera.lookAt(box.position);
+    camera.position.set(0, 1, 10);
+    box.position.z = lerp(-15, 2, scalePercent(0, 40));
+    torus.position.z = lerp(10, -20, scalePercent(0, 40));
+    box.rotation.x += 0.02;
+    box.rotation.y += 0.02;
+  },
+});
+
+//2つ目のアニメーション
+animationScripts.push({
+  start: 40,
+  end: 60,
+  function() {
+    camera.lookAt(box.position);
+    camera.position.set(0, 1, 10);
+    box.rotation.z = lerp(1, Math.PI, scalePercent(40, 60));
+  },
+});
+
+//3つ目のアニメーション
+animationScripts.push({
+  start: 60,
+  end: 80,
+  function() {
+    camera.lookAt(box.position);
+    camera.position.x = lerp(0, -15, scalePercent(60, 80));
+    camera.position.y = lerp(1, 15, scalePercent(60, 80));
+    camera.position.z = lerp(10, 25, scalePercent(60, 80));
+  },
+});
+
+//4つ目のアニメーション
+animationScripts.push({
+  start: 80,
+  end: 101,
+  function() {
+    box.rotation.x += 0.02;
+    box.rotation.y += 0.02;
+  },
+});
+
+//アニメーションを開始
+function playScrollAnimation() {
+  animationScripts.forEach((animation) => {
+    if (scrollParcent >= animation.start && scrollParcent <= animation.end)
+    animation.function();
+  });
+}
+
+//ブラウザのスクロール率の取得
+let scrollParcent = 0;
+
+document.body.onscroll = () => {
+  scrollParcent = 
+    (document.documentElement.scrollTop / 
+      (document.documentElement.scrollHeight - 
+        document.documentElement.clientHeight)) *
+          100;
+};
+
 //アニメーション
 const tick = () => {
   window.requestAnimationFrame(tick);
+  playScrollAnimation();
   renderer.render(scene, camera);
 };
 
